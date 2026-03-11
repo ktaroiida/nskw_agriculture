@@ -306,11 +306,13 @@ function showMatched(results) {
         div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
         
         const reasonTag = item.matchReason ? `<span style="background:var(--secondary-color); color:white; font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:10px; margin-left:0.5rem; vertical-align:middle;">${item.matchReason}</span>` : '';
+        const amtTag = item.amountText ? `<div style="color:var(--secondary-color); font-weight:bold; margin-top:0.3rem;">💰 ${item.amountText}</div>` : "";
 
         div.innerHTML = `
             <div style="font-weight:bold; color:var(--primary-color); font-size:1.1rem;">
                 ${item.name} ${reasonTag}
             </div>
+            ${amtTag}
             <div style="font-size:0.9rem; color:#666; margin-top:0.5rem; line-height:1.4;">${item.overview}</div>
         `;
         div.onclick = () => openDetail(item.id);

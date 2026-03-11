@@ -118,6 +118,26 @@ function getVirtualBigCategory_(row) {
     return "7. 自然や地域を守りたい";
 }
 
+// 金額文字列から数値を抽出（万円単位）
+function parseAmount_(text) {
+    if (!text) return 0;
+    // 「150万/年」 -> 150
+    // 「上限1,000万円」 -> 1000
+    const m = text.match(/([0-9,]+)\s*万/);
+    if (m) return parseFloat(m[1].replace(/,/g, ''));
+    
+    const k = text.match(/([0-9,]+)\s*千/);
+    if (k) return parseFloat(k[1].replace(/,/g, '')) / 10;
+    
+    // 単純な数値
+    const n = text.match(/([0-9,]+)/);
+    if (n) {
+        const val = parseFloat(n[1].replace(/,/g, ''));
+        return val > 10000 ? val / 10000 : val; // 10000以上なら円単位とみなして万円に変換
+    }
+    return 0;
+}
+
 // キーワード検索をサポートするマッチング実行
 function getMatchedSubsidies(query, user) {
     const results = [];
@@ -137,6 +157,19 @@ function getMatchedSubsidies(query, user) {
 
         let score = 0;
         let matchReason = "";
+
+        // 金額マッチング
+        const amtText = String(row[idxMap['補助金額']] || '');
+        const amtVal = parseAmount_(amtText);
+        if (user.budget > 0 && amtVal > 0) {
+            if (amtVal >= user.budget) {
+                score += 40;
+                matchReason = "予算条件に合致";
+            } else if (amtVal >= user.budget * 0.7) {
+                score += 20;
+                matchReason = "予算に近い案件";
+            }
+        }
 
         // キーワード検索 (高優先度)
         const name = String(row[idxMap['事業名']] || "").toLowerCase();
@@ -180,6 +213,7 @@ function getMatchedSubsidies(query, user) {
             results.push({
                 id: row[idxMap['補助金ID']] || row[idxMap['ID']] || (i + 2),
                 name: row[idxMap['事業名']] || "無題の補助金",
+                amountText: row[idxMap['補助金額']] || "詳細参照",
                 matchScore: score,
                 matchReason: matchReason,
                 overview: String(row[idxMap['事業の概要等']] || '').substring(0, 100) + '...'
@@ -271,8 +305,9 @@ function nextTab() { if (currentTab < 3) switchTab(currentTab + 1); }
 function startMatching() {
     userData = {
         age: parseInt(document.getElementById('user-age').value) || 99,
+        budget: parseInt(document.getElementById('user-budget').value) || 0,
         certified: document.getElementById('user-certified').value,
-        income: parseInt(document.getElementById('user-income').value) || 0,
+        income: parseInt(document.getElementById('user-income').value) || 9999,
         needs: Array.from(document.querySelectorAll('#needs-list input:checked')).map(c => c.value)
     };
     const query = document.getElementById('search-query').value;
@@ -308,11 +343,13 @@ function showMatched(results) {
         div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
         
         const reasonTag = item.matchReason ? `<span style="background:var(--secondary-color); color:white; font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:10px; margin-left:0.5rem; vertical-align:middle;">${item.matchReason}</span>` : '';
+        const amtTag = item.amountText ? `<div style="color:var(--secondary-color); font-weight:bold; margin-top:0.3rem;">💰 ${item.amountText}</div>` : "";
 
         div.innerHTML = `
             <div style="font-weight:bold; color:var(--primary-color); font-size:1.1rem;">
                 ${item.name} ${reasonTag}
             </div>
+            ${amtTag}
             <div style="font-size:0.9rem; color:#666; margin-top:0.5rem; line-height:1.4;">${item.overview}</div>
         `;
         div.onclick = () => openDetail(item.id);
