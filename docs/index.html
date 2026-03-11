@@ -27,17 +27,8 @@
             <div class="card" style="background: linear-gradient(to bottom right, #ffffff, #f1f8e9);">
                 <h2>補助金を探す</h2>
                 
-                <div class="form-group" style="position: relative; margin-bottom: 2rem;">
-                    <label style="font-size: 1.1rem; color: var(--primary-color);">🔍 キーワードで探す</label>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="text" id="search-query" placeholder="例：ドローン、トラクター、就農準備" 
-                               style="flex: 1; border: 2px solid var(--primary-color); border-radius: 25px; padding: 0.8rem 1.5rem; font-size: 1.1rem;">
-                        <button onclick="startMatching()" class="primary" style="width: auto; padding: 0 1.5rem; border-radius: 25px;">検索</button>
-                    </div>
-                    <p style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; margin-left: 1rem;">※「ドローン」や「施設」などで自由に検索できます</p>
-                </div>
-
-                <hr style="border: none; border-top: 1px solid #ddd; margin: 2rem 0;">
+                <h2>補助金を探す</h2>
+                <p style="color: #666; margin-bottom: 2rem;">条件を入力して、あなたにぴったりの補助金を見つけましょう。</p>
 
                 <h3>絞り込み条件（任意）</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -46,13 +37,9 @@
                         <input type="number" id="user-age" placeholder="例: 35">
                     </div>
                     <div class="form-group">
-                        <label>希望金額（万円）</label>
-                        <input type="number" id="user-budget" placeholder="例: 150">
+                        <label>昨年の世帯所得（万円）</label>
+                        <input type="number" id="user-income" placeholder="例: 400">
                     </div>
-                </div>
-                <div class="form-group">
-                    <label>昨年の世帯所得（万円）</label>
-                    <input type="number" id="user-income" placeholder="例: 400">
                 </div>
 
                 <div class="form-group">

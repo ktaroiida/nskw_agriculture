@@ -117,10 +117,9 @@ function getVirtualBigCategory_(row) {
     return "7. 自然や地域を守りたい";
 }
 
-// キーワード検索をサポートするマッチング実行
+// 条件に合う補助金を全て抽出
 function getMatchedSubsidies(query, user) {
     const results = [];
-    const q = query ? query.toLowerCase() : "";
 
     allSubsidies.forEach((row, i) => {
         // 除外処理
@@ -134,28 +133,7 @@ function getMatchedSubsidies(query, user) {
             if (user.income > limit) return;
         }
 
-        let score = 0;
-        let matchReason = "";
-
-        // キーワード検索 (高優先度)
-        const name = String(row[idxMap['事業名']] || "").toLowerCase();
-        const overview = String(row[idxMap['事業の概要等']] || "").toLowerCase();
-        const keywordCol = String(row[idxMap['キーワード']] || "").toLowerCase();
-
-        if (q) {
-            if (name.includes(q)) {
-                score += 100;
-                matchReason = "事業名に一致";
-            } else if (keywordCol.includes(q)) {
-                score += 80;
-                matchReason = "キーワードに一致";
-            } else if (overview.includes(q)) {
-                score += 50;
-                matchReason = "概要に一致";
-            }
-        }
-
-        // ニーズによるマッチング
+        // ニーズによるフィルタリング
         const virtualCat = getVirtualBigCategory_(row);
         const needToCatMap = {
             'training': "1. 農業を始めたい・学びたい",
@@ -166,27 +144,28 @@ function getMatchedSubsidies(query, user) {
             'environment': "7. 自然や地域を守りたい"
         };
 
-        if (user.needs) {
+        let isMatch = false;
+        if (user.needs && user.needs.length > 0) {
             user.needs.forEach(need => {
                 if (virtualCat === needToCatMap[need]) {
-                    score += 30;
-                    if (!matchReason) matchReason = "ニーズに合致";
+                    isMatch = true;
                 }
             });
+        } else {
+            isMatch = true;
         }
 
-        if (score > 0 || !q || results.length < 15) {
+        if (isMatch) {
             results.push({
                 id: row[idxMap['補助金ID']] || row[idxMap['ID']] || (i + 2),
                 name: row[idxMap['事業名']] || "無題の補助金",
-                matchScore: score,
-                matchReason: matchReason,
+                amountText: row[idxMap['補助金額']] || "詳細参照",
                 overview: String(row[idxMap['事業の概要等']] || '').substring(0, 100) + '...'
             });
         }
     });
 
-    return results.sort((a, b) => b.matchScore - a.matchScore).slice(0, 15);
+    return results;
 }
 
 // 階層データ取得
@@ -270,10 +249,10 @@ function startMatching() {
     userData = {
         age: parseInt(document.getElementById('user-age').value) || 99,
         certified: document.getElementById('user-certified').value,
-        income: parseInt(document.getElementById('user-income').value) || 0,
+        income: parseInt(document.getElementById('user-income').value) || 9999,
         needs: Array.from(document.querySelectorAll('#needs-list input:checked')).map(c => c.value)
     };
-    const query = document.getElementById('search-query').value;
+    const query = "";
 
     document.getElementById('matched-results').innerHTML = '<div style="text-align:center; padding:1rem;">補助金をAIが検索中...</div>';
     document.getElementById('recommend-container').style.display = 'block';
@@ -305,12 +284,11 @@ function showMatched(results) {
         div.style.marginBottom = '0.8rem';
         div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
         
-        const reasonTag = item.matchReason ? `<span style="background:var(--secondary-color); color:white; font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:10px; margin-left:0.5rem; vertical-align:middle;">${item.matchReason}</span>` : '';
         const amtTag = item.amountText ? `<div style="color:var(--secondary-color); font-weight:bold; margin-top:0.3rem;">💰 ${item.amountText}</div>` : "";
 
         div.innerHTML = `
             <div style="font-weight:bold; color:var(--primary-color); font-size:1.1rem;">
-                ${item.name} ${reasonTag}
+                ${item.name}
             </div>
             ${amtTag}
             <div style="font-size:0.9rem; color:#666; margin-top:0.5rem; line-height:1.4;">${item.overview}</div>
