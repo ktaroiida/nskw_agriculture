@@ -320,8 +320,6 @@ function showMatched(results) {
         container.appendChild(div);
     });
 
-    // 検索結果までスクロール
-    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderBigCategories() {
