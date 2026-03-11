@@ -57,30 +57,28 @@ function parseCsv(text) {
     }
 }
 
-// 簡易CSV行パーサ（ダブルクォート対応）
+// 堅牢なCSV行パーサ
 function parseCsvLine(line) {
     const result = [];
-    let start = 0;
+    let cur = "";
     let inQuotes = false;
     for (let i = 0; i < line.length; i++) {
-        if (line[i] === '"') {
-            inQuotes = !inQuotes;
-        } else if (line[i] === ',' && !inQuotes) {
-            let field = line.substring(start, i);
-            // 前後のクォート除去
-            if (field.startsWith('"') && field.endsWith('"')) {
-                field = field.substring(1, field.length - 1).replace(/""/g, '"');
+        const char = line[i];
+        if (char === '"') {
+            if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+                cur += '"';
+                i++;
+            } else {
+                inQuotes = !inQuotes;
             }
-            result.push(field);
-            start = i + 1;
+        } else if (char === ',' && !inQuotes) {
+            result.push(cur.trim());
+            cur = "";
+        } else {
+            cur += char;
         }
     }
-    // 最後のフィールド
-    let field = line.substring(start);
-    if (field.startsWith('"') && field.endsWith('"')) {
-        field = field.substring(1, field.length - 1).replace(/""/g, '"');
-    }
-    result.push(field);
+    result.push(cur.trim());
     return result;
 }
 
