@@ -18,11 +18,17 @@ let userData = {};
 let categoryHierarchy = {};
 let selectedBigCategory = "";
 
+// ブラウザのスクロール復元を無効化
+if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+}
+
 // ページ読み込み時にCSVを取得
 window.onload = async function () {
-    // 読み込み直後は必ずトップへ、結果エリアは非表示
-    window.scrollTo(0, 0);
-    document.getElementById('recommend-container').style.display = 'none';
+    // 読み込み直後は必ずトップへ（少し遅らせて確実に）
+    setTimeout(() => window.scrollTo(0, 0), 10);
+    const recContainer = document.getElementById('recommend-container');
+    if (recContainer) recContainer.style.display = 'none';
 
     try {
         await loadCsvData();

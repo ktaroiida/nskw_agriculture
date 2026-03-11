@@ -123,6 +123,10 @@ h3 { color: var(--primary-color); margin-top: 1.5rem; font-size: 1rem; }
     margin-bottom: 0.5rem; border: 1px solid #c8e6c9;
 }
 
+#recommend-container {
+    display: none;
+}
+
 .recommend-section {
     background: #fff9c4; border: 1px solid #fff176; padding: 1.2rem;
     border-radius: 15px; margin-bottom: 1.5rem;
