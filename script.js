@@ -31,17 +31,6 @@ window.onload = async function () {
         debugInfo.innerText = msg;
         document.body.appendChild(debugInfo);
 
-        // 自動検索：チェックボックス・入力が変わったらすぐに検索
-        document.querySelectorAll('#needs-list input[type="checkbox"]').forEach(cb => {
-            cb.addEventListener('change', () => startMatching());
-        });
-        document.getElementById('user-age').addEventListener('input', () => startMatching());
-        document.getElementById('user-income').addEventListener('input', () => startMatching());
-        document.getElementById('user-certified').addEventListener('change', () => startMatching());
-
-        // ページ読み込み直後に全件表示
-        startMatching();
-
     } catch (e) {
         console.error("Failed to load CSV", e);
         document.getElementById('subsidy-list').innerHTML = `<p style="color:red">データの読み込みに失敗しました: ${e.message}</p>`;

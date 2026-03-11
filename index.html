@@ -26,8 +26,6 @@
         <div class="tab-content">
             <div class="card" style="background: linear-gradient(to bottom right, #ffffff, #f1f8e9);">
                 <h2>補助金を探す</h2>
-                
-                <h2>補助金を探す</h2>
                 <p style="color: #666; margin-bottom: 2rem;">条件を入力して、あなたにぴったりの補助金を見つけましょう。</p>
 
                 <h3>絞り込み条件（任意）</h3>
@@ -58,6 +56,11 @@
                     <label class="checkbox-item"><input type="checkbox" value="expansion"> 4. 規模拡大・雇用</label>
                     <label class="checkbox-item"><input type="checkbox" value="crops"> 5. 特定作物・畜産への支援</label>
                     <label class="checkbox-item"><input type="checkbox" value="environment"> 6. 環境・鳥獣対策</label>
+                </div>
+
+                <!-- 絞り込むボタン -->
+                <div style="margin-top: 1.5rem;">
+                    <button onclick="startMatching()" class="primary" style="width: 100%; padding: 1rem; font-size: 1.1rem; border-radius: 12px; border: none; background: var(--primary-color); color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(46,125,50,0.3); transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">🔍 絞り込む</button>
                 </div>
             </div>
 
