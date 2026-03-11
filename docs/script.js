@@ -22,10 +22,16 @@ let selectedBigCategory = "";
 window.onload = async function () {
     try {
         await loadCsvData();
-        console.log("Data Loaded:", allSubsidies.length, "rows");
+        const msg = `Data Loaded: ${allSubsidies.length} items`;
+        console.log(msg);
+        const debugInfo = document.createElement('div');
+        debugInfo.id = 'debug-info';
+        debugInfo.style = 'position:fixed; bottom:0; right:0; background:rgba(0,0,0,0.5); color:white; font-size:10px; padding:2px 5px; z-index:9999; pointer-events:none;';
+        debugInfo.innerText = msg;
+        document.body.appendChild(debugInfo);
     } catch (e) {
         console.error("Failed to load CSV", e);
-        document.getElementById('subsidy-list').innerHTML = '<p style="color:red">データの読み込みに失敗しました。</p>';
+        document.getElementById('subsidy-list').innerHTML = `<p style="color:red">データの読み込みに失敗しました: ${e.message}</p>`;
     }
 };
 
@@ -169,10 +175,10 @@ function getMatchedSubsidies(query, user) {
             });
         }
 
-        if (score > 0 || !q) {
+        if (score > 0 || !q || results.length < 15) {
             results.push({
                 id: row[idxMap['補助金ID']] || row[idxMap['ID']] || (i + 2),
-                name: row[idxMap['事業名']],
+                name: row[idxMap['事業名']] || "無題の補助金",
                 matchScore: score,
                 matchReason: matchReason,
                 overview: String(row[idxMap['事業の概要等']] || '').substring(0, 100) + '...'
