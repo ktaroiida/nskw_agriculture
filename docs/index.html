@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規就農者向け 補助金ナビ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🌱 就農補助金マッチングナビ</h1>
+        <p>ポスター検証用プロトタイプ v3.0 (GitHub版)</p>
+    </header>
+
+    <div class="tab-navigation">
+        <div class="tab-nav-inner">
+            <button class="tab-button active" onclick="switchTab(0)">1. 条件入力</button>
+            <button class="tab-button" onclick="switchTab(1)">2. カテゴリー選択</button>
+            <button class="tab-button" onclick="switchTab(2)">3. 補助金一覧</button>
+            <button class="tab-button" onclick="switchTab(3)">4. 詳細確認</button>
+        </div>
+    </div>
+
+    <div class="tabs-container" id="tabs-container">
+        <!-- タブ1: 条件入力 & 検索 -->
+        <div class="tab-content">
+            <div class="card" style="background: linear-gradient(to bottom right, #ffffff, #f1f8e9);">
+                <h2>補助金を探す</h2>
+                
+                <div class="form-group" style="position: relative; margin-bottom: 2rem;">
+                    <label style="font-size: 1.1rem; color: var(--primary-color);">🔍 キーワードで探す</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="search-query" placeholder="例：ドローン、トラクター、就農準備" 
+                               style="flex: 1; border: 2px solid var(--primary-color); border-radius: 25px; padding: 0.8rem 1.5rem; font-size: 1.1rem;">
+                        <button onclick="startMatching()" class="primary" style="width: auto; padding: 0 1.5rem; border-radius: 25px;">検索</button>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #666; margin-top: 0.5rem; margin-left: 1rem;">※「ドローン」や「施設」などで自由に検索できます</p>
+                </div>
+
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 2rem 0;">
+
+                <h3>絞り込み条件（任意）</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label>ご年齢</label>
+                        <input type="number" id="user-age" placeholder="例: 35">
+                    </div>
+                    <div class="form-group">
+                        <label>昨年の世帯所得（万円）</label>
+                        <input type="number" id="user-income" placeholder="例: 400">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>認定農業者の有無</label>
+                    <select id="user-certified">
+                        <option value="no">認定農業者ではない</option>
+                        <option value="yes">認定農業者（または認定新規就農者）である</option>
+                    </select>
+                </div>
+
+                <h3>関心のある分野</h3>
+                <div class="checkbox-grid" id="needs-list">
+                    <label class="checkbox-item"><input type="checkbox" value="training"> 1. 就農準備・研修</label>
+                    <label class="checkbox-item"><input type="checkbox" value="machinery"> 2. 機械・施設導入</label>
+                    <label class="checkbox-item"><input type="checkbox" value="funding"> 3. 資金確保・融資</label>
+                    <label class="checkbox-item"><input type="checkbox" value="expansion"> 4. 規模拡大・雇用</label>
+                    <label class="checkbox-item"><input type="checkbox" value="crops"> 5. 特定作物・畜産への支援</label>
+                    <label class="checkbox-item"><input type="checkbox" value="environment"> 6. 環境・鳥獣対策</label>
+                </div>
+            </div>
+
+            <div id="recommend-container" style="display: none;">
+                <div class="recommend-section">
+                    <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.5rem;">🎯</span> 
+                        あなたにぴったりの補助金
+                    </h3>
+                    <div id="matched-results"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- タブ2: カテゴリー選択 -->
+        <div class="tab-content">
+            <div class="card">
+                <h2 id="category-panel-title">大カテゴリーを選択</h2>
+                <div class="breadcrumb" id="search-breadcrumb">
+                    <span class="active">大カテゴリー</span>
+                </div>
+                
+                <div id="category-container" class="category-grid">
+                    <div class="loading-spinner">設定を入力してください</div>
+                </div>
+                
+                <div id="back-to-big-container" style="display: none; margin-top: 1.5rem;">
+                    <button onclick="renderBigCategories()" style="background: #999; color: white; padding: 0.8rem; border: none; border-radius: 8px; width: 100%;">大カテゴリー選び直す</button>
+                </div>
+            </div>
+            <button onclick="prevTab()" style="margin-top: 1rem; background: #999; color: white; padding: 0.8rem; border: none; border-radius: 8px;">最初に戻る</button>
+        </div>
+
+        <!-- タブ3: 補助金一覧 -->
+        <div class="tab-content">
+            <div class="card">
+                <h2 id="subsidy-list-title">補助金一覧</h2>
+                <div id="subsidy-list"></div>
+            </div>
+            <button onclick="switchTab(1)" style="margin-top: 1rem; background: #999; color: white; padding: 0.8rem; border: none; border-radius: 8px;">カテゴリーに戻る</button>
+        </div>
+
+        <!-- タブ4: 詳細確認 -->
+        <div class="tab-content">
+            <div class="card">
+                <h2 id="detail-name">詳細情報</h2>
+                <div id="detail-body"></div>
+            </div>
+            <button onclick="switchTab(2)" style="margin-top: 1rem; background: #999; color: white; padding: 0.8rem; border: none; border-radius: 8px;">一覧に戻る</button>
+        </div>
+    </div>
+
+    <!-- 処理ロジックの読み込み -->
+    <script src="script.js"></script>
+</body>
+</html>

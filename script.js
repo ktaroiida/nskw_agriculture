@@ -113,9 +113,10 @@ function getVirtualBigCategory_(row) {
     return "7. 自然や地域を守りたい";
 }
 
-// マッチング実行
-function getMatchedSubsidies(user) {
+// キーワード検索をサポートするマッチング実行
+function getMatchedSubsidies(query, user) {
     const results = [];
+    const q = query ? query.toLowerCase() : "";
 
     allSubsidies.forEach((row, i) => {
         // 除外処理
@@ -129,10 +130,29 @@ function getMatchedSubsidies(user) {
             if (user.income > limit) return;
         }
 
-        // スコアリング
         let score = 0;
-        const virtualCat = getVirtualBigCategory_(row);
+        let matchReason = "";
 
+        // キーワード検索 (高優先度)
+        const name = String(row[idxMap['事業名']] || "").toLowerCase();
+        const overview = String(row[idxMap['事業の概要等']] || "").toLowerCase();
+        const keywordCol = String(row[idxMap['キーワード']] || "").toLowerCase();
+
+        if (q) {
+            if (name.includes(q)) {
+                score += 100;
+                matchReason = "事業名に一致";
+            } else if (keywordCol.includes(q)) {
+                score += 80;
+                matchReason = "キーワードに一致";
+            } else if (overview.includes(q)) {
+                score += 50;
+                matchReason = "概要に一致";
+            }
+        }
+
+        // ニーズによるマッチング
+        const virtualCat = getVirtualBigCategory_(row);
         const needToCatMap = {
             'training': "1. 農業を始めたい・学びたい",
             'machinery': "2. 機械や施設をそろえたい",
@@ -142,21 +162,27 @@ function getMatchedSubsidies(user) {
             'environment': "7. 自然や地域を守りたい"
         };
 
-        user.needs.forEach(need => {
-            if (virtualCat === needToCatMap[need]) score += 50;
-        });
+        if (user.needs) {
+            user.needs.forEach(need => {
+                if (virtualCat === needToCatMap[need]) {
+                    score += 30;
+                    if (!matchReason) matchReason = "ニーズに合致";
+                }
+            });
+        }
 
-        if (score > 0) {
+        if (score > 0 || !q) {
             results.push({
-                id: row[idxMap['補助金ID']] || (i + 2),
+                id: row[idxMap['補助金ID']] || row[idxMap['ID']] || (i + 2),
                 name: row[idxMap['事業名']],
                 matchScore: score,
-                overview: String(row[idxMap['事業の概要等']] || '').substring(0, 50) + '...'
+                matchReason: matchReason,
+                overview: String(row[idxMap['事業の概要等']] || '').substring(0, 100) + '...'
             });
         }
     });
 
-    return results.sort((a, b) => b.matchScore - a.matchScore).slice(0, 5);
+    return results.sort((a, b) => b.matchScore - a.matchScore).slice(0, 15);
 }
 
 // 階層データ取得
@@ -243,12 +269,13 @@ function startMatching() {
         income: parseInt(document.getElementById('user-income').value) || 0,
         needs: Array.from(document.querySelectorAll('#needs-list input:checked')).map(c => c.value)
     };
+    const query = document.getElementById('search-query').value;
 
-    document.getElementById('matched-results').innerHTML = '<div style="text-align:center; padding:1rem;">マッチング中...</div>';
+    document.getElementById('matched-results').innerHTML = '<div style="text-align:center; padding:1rem;">補助金をAIが検索中...</div>';
     document.getElementById('recommend-container').style.display = 'block';
 
     // 同期的に実行（データは既にメモリにあるため）
-    const results = getMatchedSubsidies(userData);
+    const results = getMatchedSubsidies(query, userData);
     showMatched(results);
 
     // 階層カテゴリーを取得
@@ -261,21 +288,33 @@ function showMatched(results) {
     container.innerHTML = '';
 
     if (results.length === 0) {
-        container.innerHTML = '<p>条件に合う補助金が見つかりませんでした。別のニーズを選択してください。</p>';
+        container.innerHTML = '<p style="text-align:center; padding:1rem;">キーワードや条件に合う補助金が見つかりませんでした。<br>別の言葉で試してみてください。</p>';
         return;
     }
 
     results.forEach(item => {
         const div = document.createElement('div');
         div.className = 'subsidy-item';
-        div.style.background = 'white'; div.style.padding = '1rem'; div.style.borderRadius = '10px'; div.style.marginBottom = '0.5rem';
+        div.style.background = 'white'; 
+        div.style.padding = '1.2rem'; 
+        div.style.borderRadius = '12px'; 
+        div.style.marginBottom = '0.8rem';
+        div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+        
+        const reasonTag = item.matchReason ? `<span style="background:var(--secondary-color); color:white; font-size:0.7rem; padding:0.2rem 0.6rem; border-radius:10px; margin-left:0.5rem; vertical-align:middle;">${item.matchReason}</span>` : '';
+
         div.innerHTML = `
-            <div style="font-weight:bold; color:var(--primary-color);">${item.name}</div>
-            <div style="font-size:0.9rem; color:#666; margin-top:0.3rem;">${item.overview}</div>
+            <div style="font-weight:bold; color:var(--primary-color); font-size:1.1rem;">
+                ${item.name} ${reasonTag}
+            </div>
+            <div style="font-size:0.9rem; color:#666; margin-top:0.5rem; line-height:1.4;">${item.overview}</div>
         `;
         div.onclick = () => openDetail(item.id);
         container.appendChild(div);
     });
+
+    // 検索結果までスクロール
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderBigCategories() {
