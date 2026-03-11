@@ -20,6 +20,10 @@ let selectedBigCategory = "";
 
 // ページ読み込み時にCSVを取得
 window.onload = async function () {
+    // 読み込み直後は必ずトップへ、結果エリアは非表示
+    window.scrollTo(0, 0);
+    document.getElementById('recommend-container').style.display = 'none';
+
     try {
         await loadCsvData();
         const msg = `Data Loaded: ${allSubsidies.length} items`;
@@ -35,6 +39,7 @@ window.onload = async function () {
         document.getElementById('subsidy-list').innerHTML = `<p style="color:red">データの読み込みに失敗しました: ${e.message}</p>`;
     }
 };
+
 
 async function loadCsvData() {
     const response = await fetch('./data.csv');
