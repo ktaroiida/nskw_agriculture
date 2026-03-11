@@ -20,7 +20,7 @@ body {
 }
 
 header {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    background: linear-gradient(135deg, #1b5e20, #43a047);
     color: white; padding: 1.5rem 1rem; text-align: center;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     position: sticky; top: 0; z-index: 100;
